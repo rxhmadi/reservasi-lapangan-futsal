@@ -41,7 +41,8 @@ Poin penting:
 
 ## 2. Prasyarat & catatan penting
 
-- VPS Ubuntu **20.04 / 22.04** (disarankan, karena SQL Server resmi mendukung versi ini).
+- VPS Ubuntu **20.04 / 22.04 / 24.04**. Untuk **24.04**, jalankan SQL Server via **Docker**
+  (lihat bagian 4A) karena belum didukung native.
 - **RAM minimal 2 GB** — SQL Server membutuhkan ~2 GB. Jika RAM kurang, tambahkan swap
   (lihat Lampiran A) atau gunakan server lebih besar.
 - Akses `sudo`, domain/subdomain yang sudah diarahkan (A record) ke IP VPS.
@@ -77,31 +78,69 @@ dotnet --info
 
 ## 4. Pasang SQL Server (untuk Linux)
 
+SQL Server 2022 **belum resmi mendukung Ubuntu 24.04**. Untuk Ubuntu 24.04 **disarankan
+memakai Docker** (paling bersih, tidak bergantung versi OS). Cara native disediakan sebagai
+alternatif.
+
+### 4A. (Disarankan untuk Ubuntu 24.04) SQL Server via Docker
+
 ```bash
-# kunci & repo Microsoft (contoh Ubuntu 22.04)
+# pasang Docker
+sudo apt-get update
+sudo apt-get install -y docker.io
+sudo systemctl enable --now docker
+
+# jalankan SQL Server 2022 (Express, gratis) sebagai container
+# - data disimpan permanen di volume 'mssql-data'
+# - hanya mendengarkan di 127.0.0.1:1433 (tidak publik)
+sudo docker run -d --name mssql --restart unless-stopped \
+  -e "ACCEPT_EULA=Y" \
+  -e "MSSQL_SA_PASSWORD=Futsal#2026Kuat" \
+  -e "MSSQL_PID=Express" \
+  -p 127.0.0.1:1433:1433 \
+  -v mssql-data:/var/opt/mssql \
+  mcr.microsoft.com/mssql/server:2022-latest
+
+# cek berjalan
+sudo docker ps
+sudo docker logs mssql --tail 20
+```
+
+Password sa harus kuat (≥8 karakter, kombinasi huruf besar, kecil, angka/simbol). Container
+ini otomatis hidup ulang saat VPS reboot (`--restart unless-stopped`).
+
+### 4B. (Alternatif) Pasang native
+
+Ubuntu 20.04 / 22.04:
+```bash
 curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null
 sudo add-apt-repository "$(curl -fsSL https://packages.microsoft.com/config/ubuntu/22.04/mssql-server-2022.list)"
 sudo apt-get update
 sudo apt-get install -y mssql-server
-
-# setup awal: pilih edition (Express = gratis), set password 'sa'
 sudo /opt/mssql/bin/mssql-conf setup
 ```
 
-Saat setup, pilih **Express** (gratis) dan tetapkan **password sa** yang kuat (minimal 8
-karakter, kombinasi huruf besar, kecil, dan angka/simbol), misalnya `Futsal#2026Kuat`.
-
-Cek status:
+Ubuntu 24.04 (native, perlu pustaka kompatibilitas karena belum resmi didukung):
 ```bash
-systemctl status mssql-server --no-pager
+curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null
+
+# SQL Server 2022 butuh libldap 2.5 (Ubuntu 24.04 memakai 2.6)
+wget http://archive.ubuntu.com/ubuntu/pool/main/o/openldap/libldap-2.5-0_2.5.11+dfsg-1~exp1ubuntu3_amd64.deb
+sudo dpkg -i libldap-2.5-0_2.5.11+dfsg-1~exp1ubuntu3_amd64.deb
+sudo apt-get install -y libcurl4
+
+# pakai repo Ubuntu 22.04 (kompatibel)
+curl -fsSL https://packages.microsoft.com/config/ubuntu/22.04/mssql-server-2022.list | sudo tee /etc/apt/sources.list.d/mssql-server-2022.list
+sudo apt-get update
+sudo apt-get install -y mssql-server
+sudo /opt/mssql/bin/mssql-conf setup
 ```
 
-> SQL Server hanya mendengarkan di lokal (port 1433). **Jangan** buka port 1433 ke publik.
+Saat `mssql-conf setup`: pilih **Express** (gratis) dan tetapkan **password sa** yang kuat.
+Cek status: `systemctl status mssql-server --no-pager`.
 
-(Opsional) pasang alat baris perintah `sqlcmd`:
-```bash
-sudo apt-get install -y mssql-tools18 unixodbc-dev
-```
+> Apa pun caranya, SQL Server hanya mendengarkan di lokal (127.0.0.1:1433). **Jangan** buka
+> port 1433 ke publik. Connection string di service tetap memakai `Server=localhost`.
 
 ---
 
@@ -148,7 +187,7 @@ Isi (sesuaikan password sa dan kunci JWT):
 ```ini
 [Unit]
 Description=Futsal Reservation API
-After=network.target mssql-server.service
+After=network.target docker.service
 
 [Service]
 WorkingDirectory=/var/www/futsal-api
@@ -172,6 +211,9 @@ WantedBy=multi-user.target
 > Kunci JWT & password disuntik lewat **environment variable**, sehingga menimpa nilai di
 > `appsettings.json`. Jadi nilai di repo tidak dipakai di produksi. Buat kunci acak dengan:
 > `openssl rand -base64 48`
+>
+> Jika memakai SQL Server **native** (bagian 4B), ganti `After=network.target docker.service`
+> menjadi `After=network.target mssql-server.service`.
 
 ---
 
@@ -345,7 +387,7 @@ sudo systemctl restart futsal-api futsal-web
 | Gejala | Periksa |
 |---|---|
 | Web error 502 di browser | `journalctl -u futsal-web -f` dan `journalctl -u futsal-api -f` |
-| API gagal start / DB error | Pastikan `systemctl status mssql-server` aktif & password sa benar di service |
+| API gagal start / DB error | Pastikan SQL Server aktif (`sudo docker ps` / `sudo docker logs mssql` untuk Docker, atau `systemctl status mssql-server` untuk native) & password sa benar |
 | "Tidak dapat terhubung ke server API" | Pastikan `futsal-api` jalan dan `ApiBaseUrl` = `http://127.0.0.1:5251/` |
 | Unggah gambar gagal / 413 | `client_max_body_size 10M;` di Nginx + izin tulis folder uploads |
 | Perubahan tidak muncul | Ulangi langkah 13 lalu restart service |
