@@ -1,0 +1,49 @@
+@model LoginVm
+@{
+    ViewData["Title"] = "Masuk";
+    Layout = "_LayoutAuth";
+}
+
+<div class="auth-card">
+    <div class="auth-head">
+        <h1>Masuk ke Akun</h1>
+        <p>Sistem Reservasi Lapangan Futsal</p>
+    </div>
+    <div class="auth-body">
+        <form asp-action="Login" method="post">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-error" role="alert"></div>
+
+            <div class="form-grup">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" class="form-control" placeholder="nama@email.com" autocomplete="username" />
+                <span asp-validation-for="Email" class="field-error"></span>
+            </div>
+
+            <div class="form-grup">
+                <label asp-for="Password"></label>
+                <input asp-for="Password" class="form-control" placeholder="Masukkan password" autocomplete="current-password" />
+                <span asp-validation-for="Password" class="field-error"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+                @Html.Ikon("login", "icon-sm") Masuk
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            Belum punya akun? <a asp-action="Register">Daftar di sini</a>
+        </div>
+
+        <div class="akun-demo">
+            Akun uji coba:<br />
+            <b>Admin</b> admin@futsal.test / admin123<br />
+            <b>User</b> user@futsal.test / user123
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

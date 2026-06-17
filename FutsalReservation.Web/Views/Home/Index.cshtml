@@ -1,0 +1,126 @@
+@model DashboardVm
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["Subtitle"] = "Ringkasan aktivitas reservasi lapangan futsal.";
+}
+
+@section Fab {
+    <a class="btn btn-primary" asp-controller="Reservasi" asp-action="Create">
+        @Html.Ikon("plus", "icon-sm") Buat Reservasi
+    </a>
+}
+
+<div class="stat-grid">
+    @if (Model.IsAdmin)
+    {
+        <div class="stat">
+            <span class="stat-ikon">@Html.Ikon("grid")</span>
+            <div>
+                <div class="nilai">@Model.TotalLapangan</div>
+                <div class="label">Total Lapangan</div>
+            </div>
+        </div>
+        <div class="stat">
+            <span class="stat-ikon">@Html.Ikon("calendar")</span>
+            <div>
+                <div class="nilai">@Model.TotalReservasi</div>
+                <div class="label">Total Reservasi</div>
+            </div>
+        </div>
+        <div class="stat">
+            <span class="stat-ikon">@Html.Ikon("clock")</span>
+            <div>
+                <div class="nilai">@Model.MenungguVerifikasi</div>
+                <div class="label">Pembayaran Perlu Verifikasi</div>
+            </div>
+        </div>
+        <div class="stat">
+            <span class="stat-ikon">@Html.Ikon("money")</span>
+            <div>
+                <div class="nilai">@Format.Rupiah(Model.TotalPendapatan)</div>
+                <div class="label">Total Pendapatan</div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="stat">
+            <span class="stat-ikon">@Html.Ikon("calendar")</span>
+            <div>
+                <div class="nilai">@Model.TotalReservasi</div>
+                <div class="label">Total Reservasi Saya</div>
+            </div>
+        </div>
+        <div class="stat">
+            <span class="stat-ikon">@Html.Ikon("check-circle")</span>
+            <div>
+                <div class="nilai">@Model.ReservasiAktif</div>
+                <div class="label">Reservasi Dikonfirmasi</div>
+            </div>
+        </div>
+        <div class="stat">
+            <span class="stat-ikon">@Html.Ikon("card")</span>
+            <div>
+                <div class="nilai">@Model.MenungguBayar</div>
+                <div class="label">Menunggu Pembayaran</div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="card">
+    <div class="card-head">
+        <h3>Reservasi Terbaru</h3>
+        <a class="btn btn-outline btn-sm" asp-controller="Reservasi" asp-action="Index">
+            @Html.Ikon("list", "icon-sm") Lihat Semua
+        </a>
+    </div>
+
+    @if (Model.ReservasiTerbaru.Any())
+    {
+        <div class="tabel-wrap">
+            <table class="tabel">
+                <thead>
+                    <tr>
+                        <th>Lapangan</th>
+                        @if (Model.IsAdmin)
+                        {
+                            <th>Pemesan</th>
+                        }
+                        <th>Tanggal</th>
+                        <th>Jam</th>
+                        <th class="angka">Total</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model.ReservasiTerbaru)
+                    {
+                        <tr>
+                            <td>@r.NamaLapangan</td>
+                            @if (Model.IsAdmin)
+                            {
+                                <td>@r.NamaUser</td>
+                            }
+                            <td>@Format.Tanggal(r.Tanggal)</td>
+                            <td>@Format.Jam(r.JamMulai) - @Format.Jam(r.JamSelesai)</td>
+                            <td class="angka">@Format.Rupiah(r.TotalHarga)</td>
+                            <td><span class="badge @Format.BadgeStatus(r.Status)">@r.Status</span></td>
+                            <td>
+                                <a class="btn btn-outline btn-sm" asp-controller="Reservasi" asp-action="Detail" asp-route-id="@r.Id">Detail</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="kosong">
+            @Html.Ikon("inbox")
+            <p>Belum ada reservasi. Mulai buat reservasi pertama Anda.</p>
+        </div>
+    }
+</div>

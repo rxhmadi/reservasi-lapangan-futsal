@@ -1,0 +1,45 @@
+@model MetodePembayaranVm
+
+<div class="form-grup">
+    <label asp-for="Tipe"></label>
+    <select asp-for="Tipe" class="form-control">
+        <option value="Bank">Bank</option>
+        <option value="E-Wallet">E-Wallet</option>
+        <option value="Tunai">Tunai (Bayar di Tempat)</option>
+    </select>
+    <span asp-validation-for="Tipe" class="field-error"></span>
+    <span class="hint">Pilih "Tunai" untuk opsi bayar di tempat dengan kode booking.</span>
+</div>
+
+<div class="form-grup">
+    <label asp-for="Nama"></label>
+    <input asp-for="Nama" class="form-control" placeholder="BCA / DANA / Bayar di Tempat" />
+    <span asp-validation-for="Nama" class="field-error"></span>
+</div>
+
+<div class="form-baris">
+    <div class="form-grup">
+        <label asp-for="NomorAkun"></label>
+        <input asp-for="NomorAkun" class="form-control" placeholder="No. rekening / no. HP" />
+        <span asp-validation-for="NomorAkun" class="field-error"></span>
+        <span class="hint">Kosongkan untuk metode tunai.</span>
+    </div>
+    <div class="form-grup">
+        <label asp-for="AtasNama"></label>
+        <input asp-for="AtasNama" class="form-control" placeholder="Nama pemilik rekening" />
+        <span asp-validation-for="AtasNama" class="field-error"></span>
+    </div>
+</div>
+
+<div class="form-grup">
+    <label asp-for="Instruksi"></label>
+    <textarea asp-for="Instruksi" class="form-control" rows="2" placeholder="Petunjuk tambahan untuk pemesan"></textarea>
+    <span asp-validation-for="Instruksi" class="field-error"></span>
+</div>
+
+<div class="form-grup">
+    <label class="check-baris">
+        <input asp-for="Aktif" type="checkbox" />
+        <span>Metode aktif dan dapat dipilih pemesan</span>
+    </label>
+</div>

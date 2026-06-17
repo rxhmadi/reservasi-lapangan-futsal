@@ -1,0 +1,69 @@
+@model List<LapanganVm>
+@{
+    bool isAdmin = ViewBag.IsAdmin ?? false;
+    ViewData["Title"] = isAdmin ? "Kelola Lapangan" : "Daftar Lapangan";
+    ViewData["Subtitle"] = isAdmin ? "Tambah, ubah, atau nonaktifkan data lapangan." : "Pilih lapangan futsal yang ingin Anda pesan.";
+}
+
+@section Fab {
+    @if (isAdmin)
+    {
+        <a class="btn btn-primary" asp-action="Create">@Html.Ikon("plus", "icon-sm") Tambah Lapangan</a>
+    }
+}
+
+@if (Model.Any())
+{
+    <div class="lap-grid">
+        @foreach (var l in Model)
+        {
+            <div class="lap-card">
+                <a class="lap-thumb" asp-action="Detail" asp-route-id="@l.Id">
+                    <img src="@l.GambarTampil" alt="Lapangan @l.Nama" loading="lazy" />
+                    @if (!l.Aktif)
+                    {
+                        <span class="lap-flag">Nonaktif</span>
+                    }
+                </a>
+                <div class="lap-body">
+                    <div class="lap-top">
+                        <h3>@l.Nama</h3>
+                        <span class="badge badge-pink">@l.Jenis</span>
+                    </div>
+                    <div class="lap-harga">@Format.Rupiah(l.HargaPerJam) <span>/ jam</span></div>
+                    <div class="lap-aksi">
+                        <a class="btn btn-outline btn-sm" asp-action="Detail" asp-route-id="@l.Id">
+                            @Html.Ikon("info", "icon-sm") Detail
+                        </a>
+                        @if (isAdmin)
+                        {
+                            <a class="btn btn-outline btn-sm" asp-action="Edit" asp-route-id="@l.Id">
+                                @Html.Ikon("edit", "icon-sm") Ubah
+                            </a>
+                            <form asp-action="Delete" asp-route-id="@l.Id" method="post"
+                                  data-confirm="Hapus lapangan @l.Nama? Tindakan ini tidak dapat dibatalkan." data-confirm-ok="Hapus" data-confirm-variant="danger">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-danger btn-sm">@Html.Ikon("trash", "icon-sm")</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a class="btn btn-primary btn-sm" asp-controller="Reservasi" asp-action="Create" asp-route-lapanganId="@l.Id">
+                                @Html.Ikon("calendar", "icon-sm") Pesan
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="kosong">
+            @Html.Ikon("grid")
+            <p>Belum ada data lapangan.</p>
+        </div>
+    </div>
+}

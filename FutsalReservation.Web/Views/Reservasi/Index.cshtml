@@ -1,0 +1,62 @@
+@model List<ReservasiVm>
+@{
+    bool isAdmin = ViewBag.IsAdmin ?? false;
+    ViewData["Title"] = "Daftar Reservasi";
+    ViewData["Subtitle"] = isAdmin ? "Seluruh reservasi yang masuk ke sistem." : "Riwayat reservasi yang Anda buat.";
+}
+
+@section Fab {
+    <a class="btn btn-primary" asp-action="Create">@Html.Ikon("plus", "icon-sm") Buat Reservasi</a>
+}
+
+<div class="card">
+    @if (Model.Any())
+    {
+        <div class="tabel-wrap">
+            <table class="tabel">
+                <thead>
+                    <tr>
+                        <th>Lapangan</th>
+                        @if (isAdmin)
+                        {
+                            <th>Pemesan</th>
+                        }
+                        <th>Tanggal</th>
+                        <th>Jam</th>
+                        <th class="angka">Total</th>
+                        <th>Pembayaran</th>
+                        <th>Status</th>
+                        <th style="width:1%"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        <tr>
+                            <td><strong>@r.NamaLapangan</strong></td>
+                            @if (isAdmin)
+                            {
+                                <td>@r.NamaUser</td>
+                            }
+                            <td>@Format.Tanggal(r.Tanggal)</td>
+                            <td>@Format.Jam(r.JamMulai) - @Format.Jam(r.JamSelesai)</td>
+                            <td class="angka">@Format.Rupiah(r.TotalHarga)</td>
+                            <td><span class="badge @Format.BadgeStatus(r.StatusPembayaran)">@r.StatusPembayaran</span></td>
+                            <td><span class="badge @Format.BadgeStatus(r.Status)">@r.Status</span></td>
+                            <td>
+                                <a class="btn btn-outline btn-sm" asp-action="Detail" asp-route-id="@r.Id">Detail</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="kosong">
+            @Html.Ikon("calendar")
+            <p>Belum ada reservasi.</p>
+        </div>
+    }
+</div>

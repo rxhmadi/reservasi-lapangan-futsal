@@ -1,0 +1,185 @@
+@{
+    var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
+    var sesi = Context.Session;
+    var nama = sesi.GetString(SesiKeys.Nama) ?? "Pengguna";
+    var role = sesi.GetString(SesiKeys.Role) ?? "User";
+    bool isAdmin = role == "Admin";
+
+    string Aktif(string c) => ctrl == c ? "aktif" : "";
+}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Reservasi Futsal</title>
+    <script>
+        (function () { try { var t = localStorage.getItem('tema'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) { } })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-head">
+                <a class="brand" asp-controller="Home" asp-action="Index">
+                    <span class="brand-title">Futsal Booking</span>
+                    <span class="brand-desc">Reservasi Lapangan Futsal</span>
+                </a>
+            </div>
+
+            <ul class="sidebar-nav">
+                <li>
+                    <a class="@Aktif("Home")" asp-controller="Home" asp-action="Index">
+                        @Html.Ikon("grip", "icon-sm") Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a class="@Aktif("Lapangan")" asp-controller="Lapangan" asp-action="Index">
+                        @Html.Ikon("grid", "icon-sm") Lapangan
+                    </a>
+                </li>
+                <li>
+                    <a class="@Aktif("Reservasi")" asp-controller="Reservasi" asp-action="Index">
+                        @Html.Ikon("calendar", "icon-sm") Reservasi
+                    </a>
+                </li>
+                <li>
+                    <a class="@Aktif("Pembayaran")" asp-controller="Pembayaran" asp-action="Index">
+                        @Html.Ikon("receipt", "icon-sm") Pembayaran
+                    </a>
+                </li>
+                @if (isAdmin)
+                {
+                    <li>
+                        <a class="@Aktif("MetodePembayaran")" asp-controller="MetodePembayaran" asp-action="Index">
+                            @Html.Ikon("wallet", "icon-sm") Metode Bayar
+                        </a>
+                    </li>
+                }
+            </ul>
+
+            <div class="sidebar-foot">
+                <div class="nav-user">
+                    <span class="avatar">@Html.Ikon("user", "icon-sm")</span>
+                    <span class="nama">
+                        <strong>@nama</strong>
+                        <small>@(isAdmin ? "Administrator" : "Pengguna")</small>
+                    </span>
+                </div>
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline btn-sm btn-block">
+                        @Html.Ikon("logout", "icon-sm") Keluar
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <div class="content-wrap">
+            <header class="topbar">
+                <div class="topbar-title">
+                    <h1>@ViewData["Title"]</h1>
+                    @if (ViewData["Subtitle"] != null)
+                    {
+                        <p>@ViewData["Subtitle"]</p>
+                    }
+                </div>
+                <div class="topbar-actions">
+                    @await RenderSectionAsync("HeaderActions", required: false)
+                    <button type="button" class="theme-toggle" aria-label="Ganti tema terang/gelap">
+                        @Html.Ikon("moon", "icon ic-moon")@Html.Ikon("sun", "icon ic-sun")
+                    </button>
+                </div>
+            </header>
+
+            <main class="container">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    @* navigasi bawah khusus tampilan mobile *@
+    <nav class="tabbar">
+        <a class="@Aktif("Home")" asp-controller="Home" asp-action="Index">
+            @Html.Ikon("grip")<span>Beranda</span>
+        </a>
+        <a class="@Aktif("Lapangan")" asp-controller="Lapangan" asp-action="Index">
+            @Html.Ikon("grid")<span>Lapangan</span>
+        </a>
+        <a class="@Aktif("Reservasi")" asp-controller="Reservasi" asp-action="Index">
+            @Html.Ikon("calendar")<span>Reservasi</span>
+        </a>
+        <a class="@Aktif("Pembayaran")" asp-controller="Pembayaran" asp-action="Index">
+            @Html.Ikon("receipt")<span>Bayar</span>
+        </a>
+        <form asp-controller="Account" asp-action="Logout" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit">@Html.Ikon("logout")<span>Keluar</span></button>
+        </form>
+    </nav>
+
+    @* tombol aksi utama mengambang (kanan bawah), kondisional per halaman *@
+    @if (IsSectionDefined("Fab"))
+    {
+        <div class="fab">
+            @await RenderSectionAsync("Fab", required: false)
+        </div>
+    }
+
+    @* toast / flash message *@
+    <div class="toast-area" id="toastArea">
+        @if (TempData["Sukses"] != null)
+        {
+            <div class="toast toast-sukses" data-toast>
+                @Html.Ikon("check-circle", "icon-sm")
+                <span>@TempData["Sukses"]</span>
+                <button type="button" class="toast-tutup" aria-label="Tutup">@Html.Ikon("x", "icon-sm")</button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="toast toast-error" data-toast>
+                @Html.Ikon("x-circle", "icon-sm")
+                <span>@TempData["Error"]</span>
+                <button type="button" class="toast-tutup" aria-label="Tutup">@Html.Ikon("x", "icon-sm")</button>
+            </div>
+        }
+        @if (TempData["Info"] != null)
+        {
+            <div class="toast toast-info" data-toast>
+                @Html.Ikon("info", "icon-sm")
+                <span>@TempData["Info"]</span>
+                <button type="button" class="toast-tutup" aria-label="Tutup">@Html.Ikon("x", "icon-sm")</button>
+            </div>
+        }
+    </div>
+
+    @* modal konfirmasi *@
+    <div class="modal-overlay" id="modalKonfirmasi">
+        <div class="modal" role="dialog" aria-modal="true">
+            <h3 id="modalJudul">Konfirmasi</h3>
+            <p id="modalPesan" class="text-muted"></p>
+            <div class="modal-aksi">
+                <button type="button" class="btn btn-outline" data-modal-batal>Batal</button>
+                <button type="button" class="btn btn-primary" id="modalOke">Ya, Lanjutkan</button>
+            </div>
+        </div>
+    </div>
+
+    @* lightbox pratinjau gambar (bukti transfer) *@
+    <div class="modal-overlay" id="modalGambar">
+        <div class="modal-gambar">
+            <button type="button" class="modal-tutup" data-modal-batal aria-label="Tutup">@Html.Ikon("x", "icon-sm")</button>
+            <img id="modalGambarSrc" src="" alt="Pratinjau bukti transfer" />
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

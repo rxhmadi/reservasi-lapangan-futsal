@@ -1,0 +1,68 @@
+@model LapanganVm
+
+<div class="form-grup">
+    <label asp-for="Nama"></label>
+    <input asp-for="Nama" class="form-control" placeholder="Contoh: Lapangan A" />
+    <span asp-validation-for="Nama" class="field-error"></span>
+</div>
+
+<div class="form-baris">
+    <div class="form-grup">
+        <label asp-for="Jenis"></label>
+        <input asp-for="Jenis" class="form-control" placeholder="Rumput Sintetis / Vinyl" list="daftarJenis" />
+        <datalist id="daftarJenis">
+            <option value="Rumput Sintetis"></option>
+            <option value="Vinyl"></option>
+            <option value="Rumput"></option>
+            <option value="Parket"></option>
+        </datalist>
+        <span asp-validation-for="Jenis" class="field-error"></span>
+    </div>
+
+    <div class="form-grup">
+        <label asp-for="HargaPerJam"></label>
+        <input asp-for="HargaPerJam" class="form-control" type="number" step="1000" min="0" placeholder="120000" />
+        <span asp-validation-for="HargaPerJam" class="field-error"></span>
+        <span class="hint">Dalam Rupiah, per jam pemakaian.</span>
+    </div>
+</div>
+
+<div class="form-grup">
+    <label asp-for="Deskripsi"></label>
+    <textarea asp-for="Deskripsi" class="form-control" placeholder="Keterangan tambahan tentang lapangan"></textarea>
+    <span asp-validation-for="Deskripsi" class="field-error"></span>
+</div>
+
+<div class="form-grup">
+    <label>Gambar Utama</label>
+    @if (!string.IsNullOrWhiteSpace(Model.GambarUtama))
+    {
+        <div><img src="@Model.GambarUtama" class="img-preview" alt="Gambar saat ini" /></div>
+    }
+    <input type="file" name="gambarFile" accept="image/*" class="form-file" />
+    <input type="hidden" asp-for="GambarUtama" />
+    <span class="hint">Unggah gambar (JPG/PNG/WEBP, maks 5 MB). Pada mode ubah, kosongkan jika tidak ingin mengganti.</span>
+</div>
+
+<div class="form-grup">
+    <label>Galeri (opsional)</label>
+    @if (!string.IsNullOrWhiteSpace(Model.Galeri))
+    {
+        <div class="galeri-thumb" style="margin-bottom:.6rem">
+            @foreach (var url in Model.Galeri.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+            {
+                <span class="thumb"><img src="@url.Trim()" alt="Galeri" loading="lazy" /></span>
+            }
+        </div>
+    }
+    <input type="file" name="galeriFiles" accept="image/*" multiple class="form-file" />
+    <input type="hidden" asp-for="Galeri" />
+    <span class="hint">Bisa memilih beberapa gambar sekaligus; gambar baru ditambahkan ke galeri yang ada.</span>
+</div>
+
+<div class="form-grup">
+    <label class="check-baris">
+        <input asp-for="Aktif" type="checkbox" />
+        <span>Lapangan aktif dan dapat dipesan</span>
+    </label>
+</div>

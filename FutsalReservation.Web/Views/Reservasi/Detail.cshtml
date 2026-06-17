@@ -1,0 +1,190 @@
+@model ReservasiVm
+@{
+    ViewData["Title"] = "Detail Reservasi #" + Model.Id;
+    ViewData["Subtitle"] = "Dibuat pada " + Format.TanggalJam(Model.DibuatPada);
+    bool isAdmin = ViewBag.IsAdmin ?? false;
+    int durasi = Model.JamSelesai - Model.JamMulai;
+
+    bool sudahLunas = Model.StatusPembayaran == "Lunas";
+    bool menungguVerif = Model.StatusPembayaran == "Menunggu Verifikasi";
+    bool dibatalkan = Model.Status == "Dibatalkan";
+    bool bolehBayar = !isAdmin && !sudahLunas && !menungguVerif && !dibatalkan;
+    bool bolehBatal = !dibatalkan && Model.Status != "Selesai";
+}
+
+@section HeaderActions {
+    <a class="btn btn-outline btn-sm" asp-action="Index">@Html.Ikon("arrow-left", "icon-sm") Kembali</a>
+}
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-head"><h3>Informasi Reservasi</h3></div>
+        <div class="card-body">
+            <dl class="def-list">
+                <dt>Lapangan</dt>
+                <dd>@Model.NamaLapangan</dd>
+
+                @if (isAdmin)
+                {
+                    <dt>Pemesan</dt>
+                    <dd>@Model.NamaUser</dd>
+                }
+
+                <dt>Tanggal</dt>
+                <dd>@Format.Tanggal(Model.Tanggal)</dd>
+
+                <dt>Waktu</dt>
+                <dd>@Format.Jam(Model.JamMulai) - @Format.Jam(Model.JamSelesai) (@durasi jam)</dd>
+
+                <dt>Catatan</dt>
+                <dd>@(string.IsNullOrWhiteSpace(Model.Catatan) ? "-" : Model.Catatan)</dd>
+
+                <dt>Total Biaya</dt>
+                <dd style="color:var(--pink-700);font-weight:700;font-size:1.1rem">@Format.Rupiah(Model.TotalHarga)</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div>
+        <div class="card" style="margin-bottom:1.25rem">
+            <div class="card-head"><h3>Status</h3></div>
+            <div class="card-body">
+                <dl class="def-list">
+                    <dt>Reservasi</dt>
+                    <dd><span class="badge @Format.BadgeStatus(Model.Status)">@Model.Status</span></dd>
+                    <dt>Pembayaran</dt>
+                    <dd><span class="badge @Format.BadgeStatus(Model.StatusPembayaran)">@Model.StatusPembayaran</span></dd>
+                    @if (!string.IsNullOrEmpty(Model.MetodePembayaran))
+                    {
+                        <dt>Metode</dt>
+                        <dd>@Model.MetodePembayaran</dd>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.KodeBooking))
+                    {
+                        <dt>Kode Booking</dt>
+                        <dd><span class="kode-booking">@Model.KodeBooking</span></dd>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.BuktiTransfer))
+                    {
+                        <dt>Bukti</dt>
+                        <dd><a href="@Model.BuktiTransfer" data-img="@Model.BuktiTransfer" class="link-bukti">@Html.Ikon("receipt", "icon-sm") Lihat bukti</a></dd>
+                    }
+                </dl>
+            </div>
+        </div>
+
+        @if (bolehBayar)
+        {
+            var metodeList = ViewBag.MetodePembayaran as List<MetodePembayaranVm> ?? new List<MetodePembayaranVm>();
+            <div class="card" style="margin-bottom:1.25rem">
+                <div class="card-head"><h3>Lakukan Pembayaran</h3></div>
+                <div class="card-body">
+                    @if (metodeList.Any())
+                    {
+                        <form asp-controller="Pembayaran" asp-action="Bayar" method="post" enctype="multipart/form-data">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="reservasiId" value="@Model.Id" />
+                            <div class="metode-list">
+                                @foreach (var m in metodeList)
+                                {
+                                    <label class="metode-opsi">
+                                        <input type="radio" name="metodePembayaranId" value="@m.Id" data-tipe="@m.Tipe" required />
+                                        <span class="metode-info">
+                                            <span class="metode-nama">@m.Nama <span class="badge badge-pink">@m.Tipe</span></span>
+                                            @if (!string.IsNullOrWhiteSpace(m.NomorAkun))
+                                            {
+                                                <span class="metode-detail">No. @m.NomorAkun@(string.IsNullOrWhiteSpace(m.AtasNama) ? "" : " · a.n. " + m.AtasNama)</span>
+                                            }
+                                            @if (m.Tipe == "Tunai")
+                                            {
+                                                <span class="metode-detail">Anda akan mendapat kode booking untuk dibayar di lokasi.</span>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(m.Instruksi))
+                                            {
+                                                <span class="hint">@m.Instruksi</span>
+                                            }
+                                        </span>
+                                    </label>
+                                }
+                            </div>
+
+                            <div class="form-grup" id="grupBukti" style="display:none;margin-top:1rem">
+                                <label>Bukti Transfer</label>
+                                <input type="file" name="buktiTransfer" id="inputBukti" accept="image/*" class="form-file" />
+                                <span class="hint">Wajib untuk transfer bank/e-wallet. Unggah foto atau screenshot bukti (maks 5 MB).</span>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block" style="margin-top:1rem">
+                                @Html.Ikon("card", "icon-sm") Bayar @Format.Rupiah(Model.TotalHarga)
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">Belum ada metode pembayaran yang tersedia. Silakan hubungi admin.</p>
+                    }
+                </div>
+            </div>
+        }
+        else if (menungguVerif && !isAdmin)
+        {
+            <div class="card" style="margin-bottom:1.25rem">
+                <div class="card-body">
+                    <div class="alert alert-sukses mb-0">
+                        @Html.Ikon("clock", "icon-sm")
+                        <span>Pembayaran Anda sedang menunggu verifikasi admin.</span>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (bolehBatal || (isAdmin && Model.Status == "Dikonfirmasi"))
+        {
+            <div class="card">
+                <div class="card-head"><h3>Tindakan</h3></div>
+                <div class="card-body toolbar">
+                    @if (isAdmin && Model.Status == "Dikonfirmasi")
+                    {
+                        <form asp-action="UbahStatus" asp-route-id="@Model.Id" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="status" value="Selesai" />
+                            <button type="submit" class="btn btn-success">@Html.Ikon("check", "icon-sm") Tandai Selesai</button>
+                        </form>
+                    }
+                    @if (bolehBatal)
+                    {
+                        <form asp-action="Batal" asp-route-id="@Model.Id" method="post"
+                              data-confirm="Batalkan reservasi ini?" data-confirm-ok="Batalkan" data-confirm-variant="danger">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger">@Html.Ikon("x", "icon-sm") Batalkan Reservasi</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var radios = document.querySelectorAll('input[name="metodePembayaranId"]');
+            var grup = document.getElementById('grupBukti');
+            var input = document.getElementById('inputBukti');
+            if (!radios.length || !grup) return;
+
+            function update() {
+                var dipilih = document.querySelector('input[name="metodePembayaranId"]:checked');
+                var perluBukti = dipilih && dipilih.getAttribute('data-tipe') !== 'Tunai';
+                grup.style.display = perluBukti ? 'block' : 'none';
+                if (input) {
+                    input.required = !!perluBukti;
+                    if (!perluBukti) input.value = '';
+                }
+            }
+
+            radios.forEach(function (r) { r.addEventListener('change', update); });
+            update();
+        })();
+    </script>
+}

@@ -1,0 +1,69 @@
+@model List<MetodePembayaranVm>
+@{
+    ViewData["Title"] = "Metode Pembayaran";
+    ViewData["Subtitle"] = "Atur rekening bank, e-wallet, dan opsi bayar di tempat.";
+}
+
+@section Fab {
+    <a class="btn btn-primary" asp-action="Create">@Html.Ikon("plus", "icon-sm") Tambah Metode</a>
+}
+
+<div class="card">
+    @if (Model.Any())
+    {
+        <div class="tabel-wrap">
+            <table class="tabel">
+                <thead>
+                    <tr>
+                        <th>Tipe</th>
+                        <th>Nama</th>
+                        <th>Nomor</th>
+                        <th>Atas Nama</th>
+                        <th>Status</th>
+                        <th style="width:1%"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var m in Model)
+                    {
+                        <tr>
+                            <td><span class="badge badge-pink">@m.Tipe</span></td>
+                            <td><strong>@m.Nama</strong></td>
+                            <td>@(string.IsNullOrWhiteSpace(m.NomorAkun) ? "-" : m.NomorAkun)</td>
+                            <td>@(string.IsNullOrWhiteSpace(m.AtasNama) ? "-" : m.AtasNama)</td>
+                            <td>
+                                @if (m.Aktif)
+                                {
+                                    <span class="badge badge-hijau">Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-abu">Nonaktif</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="toolbar">
+                                    <a class="btn btn-outline btn-sm" asp-action="Edit" asp-route-id="@m.Id">
+                                        @Html.Ikon("edit", "icon-sm") Ubah
+                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@m.Id" method="post"
+                                          data-confirm="Hapus metode @m.Nama?" data-confirm-ok="Hapus" data-confirm-variant="danger">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-danger btn-sm">@Html.Ikon("trash", "icon-sm")</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="kosong">
+            @Html.Ikon("card")
+            <p>Belum ada metode pembayaran.</p>
+        </div>
+    }
+</div>

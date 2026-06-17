@@ -1,0 +1,90 @@
+@model List<PembayaranVm>
+@{
+    bool isAdmin = ViewBag.IsAdmin ?? false;
+    ViewData["Title"] = isAdmin ? "Verifikasi Pembayaran" : "Pembayaran Saya";
+    ViewData["Subtitle"] = isAdmin ? "Tinjau dan verifikasi pembayaran yang masuk." : "Daftar pembayaran dari reservasi Anda.";
+}
+
+<div class="card">
+    @if (Model.Any())
+    {
+        <div class="tabel-wrap">
+            <table class="tabel">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Lapangan</th>
+                        @if (isAdmin)
+                        {
+                            <th>Pemesan</th>
+                        }
+                        <th class="angka">Jumlah</th>
+                        <th>Metode</th>
+                        <th>Bukti</th>
+                        <th>Tanggal Bayar</th>
+                        <th>Reservasi</th>
+                        <th>Pembayaran</th>
+                        @if (isAdmin)
+                        {
+                            <th style="width:1%"></th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model)
+                    {
+                        <tr>
+                            <td>@p.ReservasiId</td>
+                            <td><strong>@p.NamaLapangan</strong></td>
+                            @if (isAdmin)
+                            {
+                                <td>@p.NamaUser</td>
+                            }
+                            <td class="angka">@Format.Rupiah(p.Jumlah)</td>
+                            <td>@(p.Metode == "-" ? "-" : p.Metode)</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(p.BuktiTransfer))
+                                {
+                                    <a href="@p.BuktiTransfer" data-img="@p.BuktiTransfer" class="link-bukti">@Html.Ikon("receipt", "icon-sm") Lihat</a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>@(p.TanggalBayar.HasValue ? Format.TanggalJam(p.TanggalBayar.Value) : "-")</td>
+                            <td><span class="badge @Format.BadgeStatus(p.StatusReservasi)">@p.StatusReservasi</span></td>
+                            <td><span class="badge @Format.BadgeStatus(p.Status)">@p.Status</span></td>
+                            @if (isAdmin)
+                            {
+                                <td>
+                                    @if (p.Status == "Menunggu Verifikasi" && p.StatusReservasi != "Dibatalkan")
+                                    {
+                                        <form asp-action="Verifikasi" asp-route-id="@p.Id" method="post"
+                                              data-confirm="Verifikasi pembayaran ini? Reservasi akan otomatis dikonfirmasi." data-confirm-ok="Verifikasi">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                @Html.Ikon("check", "icon-sm") Verifikasi
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="kosong">
+            @Html.Ikon("card")
+            <p>Belum ada data pembayaran.</p>
+        </div>
+    }
+</div>

@@ -1,0 +1,25 @@
+@model LapanganVm
+@{
+    ViewData["Title"] = "Ubah Lapangan";
+    ViewData["Subtitle"] = "Perbarui data lapangan " + Model.Nama + ".";
+}
+
+@section HeaderActions {
+    <a class="btn btn-outline btn-sm" asp-action="Index">@Html.Ikon("arrow-left", "icon-sm") Kembali</a>
+}
+
+<div class="card" style="max-width:640px">
+    <div class="card-body">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="alert alert-error"></div>
+            <partial name="_Form" model="Model" />
+            <button type="submit" class="btn btn-primary">@Html.Ikon("check", "icon-sm") Simpan Perubahan</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

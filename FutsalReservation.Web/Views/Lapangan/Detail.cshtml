@@ -1,0 +1,99 @@
+@model LapanganVm
+@{
+    ViewData["Title"] = Model.Nama;
+    ViewData["Subtitle"] = Model.Jenis;
+    bool isAdmin = ViewBag.IsAdmin ?? false;
+    var galeri = Model.GaleriUrls;
+}
+
+@section HeaderActions {
+    <a class="btn btn-outline btn-sm" asp-action="Index">@Html.Ikon("arrow-left", "icon-sm") Kembali</a>
+}
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-body">
+            <div class="galeri">
+                <div class="galeri-utama">
+                    <img id="galeriUtama" src="@galeri[0]" alt="Lapangan @Model.Nama" />
+                </div>
+                @if (galeri.Count > 1)
+                {
+                    <div class="galeri-thumb">
+                        @foreach (var url in galeri)
+                        {
+                            <button type="button" class="thumb @(url == galeri[0] ? "aktif" : "")" data-src="@url">
+                                <img src="@url" alt="Pratinjau lapangan @Model.Nama" loading="lazy" />
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="card" style="margin-bottom:1.25rem">
+            <div class="card-head"><h3>Informasi</h3></div>
+            <div class="card-body">
+                <dl class="def-list">
+                    <dt>Jenis</dt>
+                    <dd>@Model.Jenis</dd>
+                    <dt>Harga</dt>
+                    <dd style="color:var(--pink-700);font-weight:700;font-size:1.1rem">@Format.Rupiah(Model.HargaPerJam) <span class="text-muted" style="font-weight:400;font-size:.85rem">/ jam</span></dd>
+                    <dt>Status</dt>
+                    <dd>
+                        @if (Model.Aktif)
+                        {
+                            <span class="badge badge-hijau">Tersedia</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-abu">Nonaktif</span>
+                        }
+                    </dd>
+                </dl>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Deskripsi))
+                {
+                    <p style="margin-top:1rem">@Model.Deskripsi</p>
+                }
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body toolbar">
+                @if (isAdmin)
+                {
+                    <a class="btn btn-outline" asp-action="Edit" asp-route-id="@Model.Id">@Html.Ikon("edit", "icon-sm") Ubah Lapangan</a>
+                }
+                else if (Model.Aktif)
+                {
+                    <a class="btn btn-primary btn-block" asp-controller="Reservasi" asp-action="Create" asp-route-lapanganId="@Model.Id">
+                        @Html.Ikon("calendar", "icon-sm") Pesan Lapangan Ini
+                    </a>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">Lapangan ini sedang tidak tersedia untuk dipesan.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var utama = document.getElementById('galeriUtama');
+            var tombol = document.querySelectorAll('.galeri-thumb .thumb');
+            tombol.forEach(function (t) {
+                t.addEventListener('click', function () {
+                    utama.src = t.getAttribute('data-src');
+                    tombol.forEach(function (x) { x.classList.remove('aktif'); });
+                    t.classList.add('aktif');
+                });
+            });
+        })();
+    </script>
+}

@@ -1,0 +1,42 @@
+Sistem Terdistribusi
+Selamat Mengerjakan, Sukses Selalu, Jangan Lupa Berdoa Sebelum Mengerjakan 
+SOAL
+Ketentuan Tugas Kelompok:
+1. Buatlah kelompok yang terdiri dari 2-3 anak untuk tiap kelompok.
+2. Diskusikan bersama kelompok Anda untuk membahas mengenai aplikasi berbasis sistem
+terdistribusi.
+3. Tiap kelompok tidak boleh sama untuk aplikasinya.
+
+4. Berikut ini beberapa contoh pilihan yang direkomendasikan untuk perancangan aplikasi
+sistem terdistribusi:
+a. Sistem Pengelolaan SPP / Pembayaran Sekolah
+b. Sistem Perpustakaan Digital
+c. Sistem E‑Complaint (Pengaduan Masyarakat)
+d. Sistem Booking Bengkel Motor
+e. Sistem Absensi Karyawan Online
+f. Sistem Manajemen Laundry
+g. Sistem Reservasi Lapangan Futsal
+h. Sistem Manajemen Klinik / Puskesmas Mini
+i. Sistem Monitoring Tanaman Pertanian (IoT Dummy)
+
+5. Fitur yang wajib ada:
+a. Login + Role (Admin & User/Staff)
+b. CRUD Data Utama sesuai tema
+c. Minimal 1 modul transaksi
+d. Sistem harus terdistribusi (Backend API + Frontend MVC) 
+
+6. Teknologi yang Digunakan
+a. Backend: ASP.NET Web API
+b. Frontend: ASP.NET MVC
+c. Database: (localDb) SQL Server
+7. Output yang dikumpulkan
+a. Source Code lengkap (API & MVC)
+b. Database (.bak atau script SQL)
+c. Manual Book
+8. Tugas projek dipresentasikan pada pertemuan minggu ke-14 dan 15.
+9. Projek wajib dikumpulkan dalam bentuk file .zip atau .rar melalui link: 
+https://s.id/TugasAkhir_SISTER
+Format file: NamaKelompok_NamaProjek contoh: Kelompok1_SistemPerpusDigital
+maksimal 4 Juli 2026 pukul 23:59 WIB
+
+
