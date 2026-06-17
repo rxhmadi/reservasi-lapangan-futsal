@@ -199,7 +199,7 @@ SyslogIdentifier=futsal-api
 User=www-data
 Environment=ASPNETCORE_ENVIRONMENT=Production
 Environment=ASPNETCORE_URLS=http://127.0.0.1:5251
-Environment=ConnectionStrings__DefaultConnection=Server=localhost;Database=FutsalReservasiDb;User Id=sa;Password=Futsal#2026Kuat;TrustServerCertificate=True;MultipleActiveResultSets=True
+Environment="ConnectionStrings__DefaultConnection=Server=localhost;Database=FutsalReservasiDb;User Id=sa;Password=Futsal#2026Kuat;TrustServerCertificate=True;MultipleActiveResultSets=True"
 Environment=Jwt__Key=ganti-dengan-kunci-acak-minimal-32-karakter-yang-panjang
 Environment=Jwt__Issuer=FutsalReservation.Api
 Environment=Jwt__Audience=FutsalReservation.Web
@@ -211,6 +211,10 @@ WantedBy=multi-user.target
 > Kunci JWT & password disuntik lewat **environment variable**, sehingga menimpa nilai di
 > `appsettings.json`. Jadi nilai di repo tidak dipakai di produksi. Buat kunci acak dengan:
 > `openssl rand -base64 48`
+>
+> **Penting:** baris connection string **wajib diapit tanda kutip ganda** (`Environment="..."`)
+> karena nilainya mengandung spasi (pada `User Id`). Tanpa kutip, systemd memotong nilai pada
+> spasi sehingga muncul error `Format of the initialization string ... index 44`.
 >
 > Jika memakai SQL Server **native** (bagian 4B), ganti `After=network.target docker.service`
 > menjadi `After=network.target mssql-server.service`.
