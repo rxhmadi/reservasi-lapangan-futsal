@@ -125,3 +125,9 @@ Buka `http://localhost:5071` di browser.
 
 Reservasi dapat dibatalkan oleh pemilik atau admin selama belum selesai. Jika dibatalkan,
 pembayaran yang belum lunas otomatis dibatalkan juga.
+
+## Dokumentasi
+
+- `docs/Manual_Book.md` — panduan penggunaan aplikasi (user & admin).
+- `docs/Penjelasan_Lengkap.md` — penjelasan teknis menyeluruh (arsitektur, API, JWT, dll).
+- `docs/Deploy_VPS.md` — panduan deploy ke VPS Ubuntu + Nginx.
