@@ -25,3 +25,7 @@ FutsalReservation.Web/wwwroot/uploads/*
 ## File sementara
 _*.html
 _*.txt
+
+## Dokumen & README — simpan lokal saja, jangan di-push
+/README.md
+/docs/
