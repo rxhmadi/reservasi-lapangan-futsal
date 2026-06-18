@@ -29,3 +29,4 @@ _*.txt
 ## Dokumen & README — simpan lokal saja, jangan di-push
 /README.md
 /docs/
+/tugas.txt
