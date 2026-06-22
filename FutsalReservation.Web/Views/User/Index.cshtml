@@ -1,0 +1,58 @@
+@model List<UserVm>
+@{
+    ViewData["Title"] = "Pengguna";
+    ViewData["Subtitle"] = "Daftar akun yang terdaftar di sistem.";
+}
+
+<div class="card">
+    @if (Model.Any())
+    {
+        <div class="tabel-wrap">
+            <table class="tabel">
+                <thead>
+                    <tr>
+                        <th>Nama</th>
+                        <th>Email</th>
+                        <th>Peran</th>
+                        <th class="angka">Reservasi</th>
+                        <th>Bergabung</th>
+                        <th style="width:1%"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var u in Model)
+                    {
+                        <tr>
+                            <td><strong>@u.Nama</strong></td>
+                            <td>@u.Email</td>
+                            <td>
+                                @if (u.Role == "Admin")
+                                {
+                                    <span class="badge badge-pink">Admin</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-abu">Pengguna</span>
+                                }
+                            </td>
+                            <td class="angka">@u.JumlahReservasi</td>
+                            <td>@Format.Tanggal(u.DibuatPada)</td>
+                            <td>
+                                <a class="btn btn-outline btn-sm" asp-action="Detail" asp-route-id="@u.Id">
+                                    @Html.Ikon("user", "icon-sm") Detail
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="kosong">
+            @Html.Ikon("user")
+            <p>Belum ada pengguna terdaftar.</p>
+        </div>
+    }
+</div>

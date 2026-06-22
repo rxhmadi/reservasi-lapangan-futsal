@@ -23,6 +23,7 @@ public class DashboardVm
     // ringkasan admin
     public int TotalLapangan { get; set; }
     public int TotalReservasi { get; set; }
+    public int TotalUser { get; set; }
     public int MenungguKonfirmasi { get; set; }
     public int MenungguVerifikasi { get; set; }
     public decimal TotalPendapatan { get; set; }

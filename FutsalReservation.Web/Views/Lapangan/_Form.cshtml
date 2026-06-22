@@ -9,13 +9,7 @@
 <div class="form-baris">
     <div class="form-grup">
         <label asp-for="Jenis"></label>
-        <input asp-for="Jenis" class="form-control" placeholder="Rumput Sintetis / Vinyl" list="daftarJenis" />
-        <datalist id="daftarJenis">
-            <option value="Rumput Sintetis"></option>
-            <option value="Vinyl"></option>
-            <option value="Rumput"></option>
-            <option value="Parket"></option>
-        </datalist>
+        <input asp-for="Jenis" class="form-control" placeholder="Mis. Rumput Sintetis / Vinyl" autocomplete="off" />
         <span asp-validation-for="Jenis" class="field-error"></span>
     </div>
 

@@ -55,6 +55,11 @@
                 @if (isAdmin)
                 {
                     <li>
+                        <a class="@Aktif("User")" asp-controller="User" asp-action="Index">
+                            @Html.Ikon("user", "icon-sm") Pengguna
+                        </a>
+                    </li>
+                    <li>
                         <a class="@Aktif("MetodePembayaran")" asp-controller="MetodePembayaran" asp-action="Index">
                             @Html.Ikon("wallet", "icon-sm") Metode Bayar
                         </a>

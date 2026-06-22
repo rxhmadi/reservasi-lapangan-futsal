@@ -34,6 +34,7 @@ public class DashboardController : ControllerBase
             {
                 totalLapangan = await _db.Lapangan.CountAsync(),
                 totalReservasi = await _db.Reservasi.CountAsync(),
+                totalUser = await _db.Users.CountAsync(u => u.Role != "Admin"),
                 menungguKonfirmasi = await _db.Reservasi.CountAsync(r => r.Status == "Menunggu"),
                 menungguVerifikasi = await _db.Pembayaran.CountAsync(p => p.Status == "Menunggu Verifikasi"),
                 totalPendapatan

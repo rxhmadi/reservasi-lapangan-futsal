@@ -30,6 +30,7 @@ public class HomeController : Controller
             var d = ringkasan.Data;
             vm.TotalLapangan = d.TotalLapangan;
             vm.TotalReservasi = d.TotalReservasi;
+            vm.TotalUser = d.TotalUser;
             vm.MenungguKonfirmasi = d.MenungguKonfirmasi;
             vm.MenungguVerifikasi = d.MenungguVerifikasi;
             vm.TotalPendapatan = d.TotalPendapatan;
@@ -55,6 +56,7 @@ public class HomeController : Controller
     {
         public int TotalLapangan { get; set; }
         public int TotalReservasi { get; set; }
+        public int TotalUser { get; set; }
         public int MenungguKonfirmasi { get; set; }
         public int MenungguVerifikasi { get; set; }
         public decimal TotalPendapatan { get; set; }

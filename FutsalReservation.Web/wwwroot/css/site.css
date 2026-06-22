@@ -558,15 +558,6 @@ textarea.form-control {
     min-height: 80px;
 }
 
-/* input teks bebas dengan datalist: sembunyikan ikon panah dropdown bawaan browser */
-input[list]::-webkit-calendar-picker-indicator {
-    display: none;
-}
-
-input[list] {
-    appearance: none;
-}
-
 .form-baris {
     display: grid;
     grid-template-columns: 1fr 1fr;

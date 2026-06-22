@@ -1,0 +1,61 @@
+@model UserVm
+@{
+    ViewData["Title"] = "Detail Pengguna";
+    ViewData["Subtitle"] = Model.Nama;
+}
+
+@section HeaderActions {
+    <a class="btn btn-outline btn-sm" asp-action="Index">@Html.Ikon("arrow-left", "icon-sm") Kembali</a>
+}
+
+<div class="stat-grid">
+    <div class="stat">
+        <span class="stat-ikon">@Html.Ikon("calendar")</span>
+        <div>
+            <div class="nilai">@Model.JumlahReservasi</div>
+            <div class="label">Total Reservasi</div>
+        </div>
+    </div>
+    <div class="stat">
+        <span class="stat-ikon">@Html.Ikon("check-circle")</span>
+        <div>
+            <div class="nilai">@Model.ReservasiAktif</div>
+            <div class="label">Reservasi Dikonfirmasi</div>
+        </div>
+    </div>
+    <div class="stat">
+        <span class="stat-ikon">@Html.Ikon("money")</span>
+        <div>
+            <div class="nilai">@Format.Rupiah(Model.TotalPengeluaran)</div>
+            <div class="label">Total Pengeluaran</div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="max-width:640px">
+    <div class="card-head"><h3>Informasi Akun</h3></div>
+    <div class="card-body">
+        <dl class="def-list">
+            <dt>Nama</dt>
+            <dd>@Model.Nama</dd>
+
+            <dt>Email</dt>
+            <dd>@Model.Email</dd>
+
+            <dt>Peran</dt>
+            <dd>
+                @if (Model.Role == "Admin")
+                {
+                    <span class="badge badge-pink">Admin</span>
+                }
+                else
+                {
+                    <span class="badge badge-abu">Pengguna</span>
+                }
+            </dd>
+
+            <dt>Bergabung</dt>
+            <dd>@Format.TanggalJam(Model.DibuatPada)</dd>
+        </dl>
+    </div>
+</div>
