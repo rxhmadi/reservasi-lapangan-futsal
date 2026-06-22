@@ -62,6 +62,30 @@ public class ReservasiController : ControllerBase
         return Ok(MapResponse(reservasi));
     }
 
+    // daftar jam yang sudah terisi untuk satu lapangan pada satu tanggal
+    [HttpGet("ketersediaan")]
+    public async Task<IActionResult> Ketersediaan([FromQuery] int lapanganId, [FromQuery] DateTime tanggal)
+    {
+        var daftar = await _db.Reservasi
+            .Where(r => r.LapanganId == lapanganId
+                        && r.Tanggal == tanggal.Date
+                        && r.Status != "Dibatalkan")
+            .Select(r => new { r.JamMulai, r.JamSelesai })
+            .ToListAsync();
+
+        var terisi = new SortedSet<int>();
+        foreach (var r in daftar)
+            for (int h = r.JamMulai; h < r.JamSelesai; h++)
+                terisi.Add(h);
+
+        return Ok(new KetersediaanResponse
+        {
+            LapanganId = lapanganId,
+            Tanggal = tanggal.Date,
+            SlotTerisi = terisi.ToList()
+        });
+    }
+
     [HttpPost]
     public async Task<IActionResult> Buat(ReservasiRequest req)
     {
@@ -141,6 +165,10 @@ public class ReservasiController : ControllerBase
 
             if (status != "Dibatalkan")
                 return BadRequest(new { message = "Anda hanya dapat membatalkan reservasi." });
+
+            // setelah dikonfirmasi/lunas, user tidak boleh membatalkan
+            if (reservasi.Status != "Menunggu")
+                return BadRequest(new { message = "Reservasi yang sudah dikonfirmasi tidak dapat dibatalkan. Silakan hubungi admin." });
         }
 
         reservasi.Status = status;

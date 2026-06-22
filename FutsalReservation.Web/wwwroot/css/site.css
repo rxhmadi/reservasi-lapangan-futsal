@@ -1405,3 +1405,83 @@ table.tabel th.angka {
 .modal-tutup:hover {
     background: var(--hover);
 }
+
+/* ===== Grid pilih jam (ketersediaan) ===== */
+.slot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+    gap: 0.4rem;
+    margin-bottom: 0.6rem;
+}
+
+.slot {
+    padding: 0.5rem 0.25rem;
+    border: 1px solid var(--garis);
+    border-radius: var(--radius-sm);
+    background: var(--putih);
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--teks);
+    cursor: pointer;
+    text-align: center;
+    transition: background .12s, border-color .12s, color .12s;
+}
+
+.slot.tersedia:hover {
+    border-color: var(--pink-400);
+    background: var(--pink-50);
+    color: var(--pink-700);
+}
+
+.slot.terpilih {
+    background: var(--pink-600);
+    border-color: var(--pink-600);
+    color: #fff;
+}
+
+.slot.terisi {
+    background: var(--surface-2);
+    color: var(--teks-redup);
+    border-style: dashed;
+    text-decoration: line-through;
+    cursor: not-allowed;
+}
+
+.jam-legenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.78rem;
+    color: var(--teks-redup);
+}
+
+.jam-legenda span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.jam-legenda .kotak {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    display: inline-block;
+    border: 1px solid var(--garis);
+}
+
+.jam-legenda .kotak.tersedia { background: var(--putih); }
+.jam-legenda .kotak.terisi { background: var(--surface-2); border-style: dashed; }
+.jam-legenda .kotak.terpilih { background: var(--pink-600); border-color: var(--pink-600); }
+
+.jam-ringkasan {
+    font-size: 0.85rem;
+    color: var(--teks-redup);
+    margin-bottom: 0.4rem;
+}
+
+.jam-ringkasan.aktif {
+    color: var(--pink-700);
+    font-weight: 600;
+}

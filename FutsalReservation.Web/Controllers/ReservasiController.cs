@@ -33,11 +33,27 @@ public class ReservasiController : Controller
     [HttpGet]
     public async Task<IActionResult> Create(int? lapanganId = null)
     {
-        var vm = new ReservasiFormVm();
+        var vm = new ReservasiFormVm
+        {
+            JamMulai = 0,
+            JamSelesai = 0
+        };
         if (lapanganId.HasValue)
             vm.LapanganId = lapanganId.Value;
         await IsiDaftarLapangan(vm);
         return View(vm);
+    }
+
+    // dipakai halaman Buat Reservasi (AJAX) untuk menampilkan jam yang sudah terisi
+    [HttpGet]
+    public async Task<IActionResult> Ketersediaan(int lapanganId, string tanggal)
+    {
+        if (lapanganId <= 0 || string.IsNullOrWhiteSpace(tanggal))
+            return Json(new { slotTerisi = Array.Empty<int>() });
+
+        var hasil = await _api.GetAsync<KetersediaanVm>($"api/reservasi/ketersediaan?lapanganId={lapanganId}&tanggal={tanggal}");
+        var slot = hasil.Sukses && hasil.Data != null ? hasil.Data.SlotTerisi : new List<int>();
+        return Json(new { slotTerisi = slot });
     }
 
     [HttpPost]

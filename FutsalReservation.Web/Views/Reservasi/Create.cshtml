@@ -1,7 +1,7 @@
 @model ReservasiFormVm
 @{
     ViewData["Title"] = "Buat Reservasi";
-    ViewData["Subtitle"] = "Pilih lapangan dan jadwal yang diinginkan.";
+    ViewData["Subtitle"] = "Pilih lapangan, tanggal, lalu jam yang tersedia.";
 }
 
 @section HeaderActions {
@@ -11,7 +11,7 @@
 <div class="grid-2">
     <div class="card">
         <div class="card-body">
-            <form asp-action="Create" method="post">
+            <form asp-action="Create" method="post" id="formReservasi">
                 @Html.AntiForgeryToken()
                 <div asp-validation-summary="ModelOnly" class="alert alert-error"></div>
 
@@ -29,31 +29,25 @@
 
                 <div class="form-grup">
                     <label asp-for="Tanggal"></label>
-                    <input asp-for="Tanggal" class="form-control" type="date" />
+                    <input asp-for="Tanggal" id="pilihTanggal" class="form-control" type="date" />
                     <span asp-validation-for="Tanggal" class="field-error"></span>
                 </div>
 
-                <div class="form-baris">
-                    <div class="form-grup">
-                        <label asp-for="JamMulai"></label>
-                        <select asp-for="JamMulai" id="jamMulai" class="form-control">
-                            @for (int j = 6; j <= 23; j++)
-                            {
-                                <option value="@j">@Format.Jam(j)</option>
-                            }
-                        </select>
-                        <span asp-validation-for="JamMulai" class="field-error"></span>
+                <div class="form-grup">
+                    <label>Pilih Jam</label>
+                    <div class="jam-legenda">
+                        <span><i class="kotak tersedia"></i> Tersedia</span>
+                        <span><i class="kotak terisi"></i> Sudah dipesan</span>
+                        <span><i class="kotak terpilih"></i> Pilihan Anda</span>
                     </div>
-                    <div class="form-grup">
-                        <label asp-for="JamSelesai"></label>
-                        <select asp-for="JamSelesai" id="jamSelesai" class="form-control">
-                            @for (int j = 7; j <= 24; j++)
-                            {
-                                <option value="@j">@Format.Jam(j)</option>
-                            }
-                        </select>
-                        <span asp-validation-for="JamSelesai" class="field-error"></span>
-                    </div>
+                    <div class="slot-grid" id="gridJam"></div>
+                    <p class="hint" id="gridInfo">Pilih lapangan dan tanggal untuk melihat ketersediaan jam.</p>
+                    <div class="jam-ringkasan" id="ringkasanJam">Belum ada jam dipilih.</div>
+                    <input type="hidden" asp-for="JamMulai" />
+                    <input type="hidden" asp-for="JamSelesai" />
+                    <span asp-validation-for="JamSelesai" class="field-error"></span>
+                    <span class="field-error" id="errJam"></span>
+                    <p class="hint">Tiap kotak mewakili 1 jam. Klik jam mulai lalu jam selesai.</p>
                 </div>
 
                 <div class="form-grup">
@@ -90,35 +84,143 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         (function () {
+            var JAM_AWAL = 6, JAM_AKHIR = 23;   // slot terakhir 23:00 - 24:00
             var pilih = document.getElementById('pilihLapangan');
-            var mulai = document.getElementById('jamMulai');
-            var selesai = document.getElementById('jamSelesai');
+            var tanggal = document.getElementById('pilihTanggal');
+            var grid = document.getElementById('gridJam');
+            var info = document.getElementById('gridInfo');
+            var ringkasan = document.getElementById('ringkasanJam');
+            var inMulai = document.getElementById('JamMulai');
+            var inSelesai = document.getElementById('JamSelesai');
+            var errJam = document.getElementById('errJam');
+            var form = document.getElementById('formReservasi');
 
-            function rupiah(n) {
-                return 'Rp ' + n.toLocaleString('id-ID');
+            var terisi = [];
+            var langkah = 'mulai';
+            var selMulai = null, selSelesai = null;
+
+            function pad(n) { return ('0' + n).slice(-2); }
+            function labelJam(h) { return pad(h) + ':00'; }
+            function rupiah(n) { return 'Rp ' + n.toLocaleString('id-ID'); }
+
+            function tanggalHariIni() {
+                var d = new Date();
+                return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
             }
 
-            function hitung() {
-                var opt = pilih.options[pilih.selectedIndex];
-                var harga = opt ? parseFloat(opt.getAttribute('data-harga') || '0') : 0;
-                var durasi = parseInt(selesai.value) - parseInt(mulai.value);
+            function jamLewat(h) {
+                if (tanggal.value !== tanggalHariIni()) return false;
+                return h < new Date().getHours();
+            }
 
-                document.getElementById('estHarga').textContent = harga ? rupiah(harga) : '-';
+            function tersedia(h) {
+                return terisi.indexOf(h) === -1 && !jamLewat(h);
+            }
 
-                if (!harga || isNaN(durasi) || durasi <= 0) {
-                    document.getElementById('estDurasi').textContent = durasi > 0 ? durasi + ' jam' : '-';
-                    document.getElementById('estTotal').textContent = '-';
+            function renderGrid() {
+                if (!pilih.value || !tanggal.value) {
+                    grid.innerHTML = '';
+                    info.style.display = 'block';
                     return;
                 }
-
-                document.getElementById('estDurasi').textContent = durasi + ' jam';
-                document.getElementById('estTotal').textContent = rupiah(harga * durasi);
+                info.style.display = 'none';
+                var html = '';
+                for (var h = JAM_AWAL; h <= JAM_AKHIR; h++) {
+                    var cls = 'slot ';
+                    var terpilih = (selMulai != null && selSelesai != null && h >= selMulai && h < selSelesai);
+                    if (!tersedia(h)) cls += 'terisi';
+                    else if (terpilih) cls += 'terpilih';
+                    else cls += 'tersedia';
+                    html += '<button type="button" class="' + cls + '" data-jam="' + h + '">' + labelJam(h) + '</button>';
+                }
+                grid.innerHTML = html;
             }
 
-            [pilih, mulai, selesai].forEach(function (el) {
-                el.addEventListener('change', hitung);
+            function perbarui() {
+                var opt = pilih.options[pilih.selectedIndex];
+                var harga = opt ? parseFloat(opt.getAttribute('data-harga') || '0') : 0;
+                document.getElementById('estHarga').textContent = harga ? rupiah(harga) : '-';
+
+                if (selMulai != null && selSelesai != null && selSelesai > selMulai) {
+                    inMulai.value = selMulai;
+                    inSelesai.value = selSelesai;
+                    var durasi = selSelesai - selMulai;
+                    ringkasan.textContent = 'Dipilih: ' + labelJam(selMulai) + ' – ' + labelJam(selSelesai) + ' (' + durasi + ' jam)';
+                    ringkasan.classList.add('aktif');
+                    document.getElementById('estDurasi').textContent = durasi + ' jam';
+                    document.getElementById('estTotal').textContent = harga ? rupiah(harga * durasi) : '-';
+                } else {
+                    inMulai.value = 0;
+                    inSelesai.value = 0;
+                    ringkasan.textContent = 'Belum ada jam dipilih.';
+                    ringkasan.classList.remove('aktif');
+                    document.getElementById('estDurasi').textContent = '-';
+                    document.getElementById('estTotal').textContent = '-';
+                }
+            }
+
+            function klikSlot(h) {
+                errJam.textContent = '';
+                if (!tersedia(h)) return;
+
+                if (langkah === 'mulai') {
+                    selMulai = h; selSelesai = h + 1; langkah = 'selesai';
+                } else {
+                    if (h >= selMulai) {
+                        var ok = true;
+                        for (var x = selMulai; x <= h; x++) { if (!tersedia(x)) { ok = false; break; } }
+                        if (ok) { selSelesai = h + 1; langkah = 'mulai'; }
+                        else { errJam.textContent = 'Rentang melewati jam yang sudah dipesan. Pilih jam lain.'; }
+                    } else {
+                        selMulai = h; selSelesai = h + 1; langkah = 'selesai';
+                    }
+                }
+                renderGrid();
+                perbarui();
+            }
+
+            function resetPilihan() {
+                selMulai = null; selSelesai = null; langkah = 'mulai';
+                errJam.textContent = '';
+            }
+
+            function muatKetersediaan() {
+                resetPilihan();
+                if (!pilih.value || !tanggal.value) { terisi = []; renderGrid(); perbarui(); return; }
+                info.style.display = 'block';
+                info.textContent = 'Memuat ketersediaan...';
+                fetch('/Reservasi/Ketersediaan?lapanganId=' + encodeURIComponent(pilih.value) + '&tanggal=' + encodeURIComponent(tanggal.value))
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        terisi = (data && data.slotTerisi) ? data.slotTerisi : [];
+                        info.textContent = 'Pilih lapangan dan tanggal untuk melihat ketersediaan jam.';
+                        renderGrid();
+                        perbarui();
+                    })
+                    .catch(function () {
+                        terisi = [];
+                        renderGrid();
+                        perbarui();
+                    });
+            }
+
+            grid.addEventListener('click', function (e) {
+                var btn = e.target.closest('button[data-jam]');
+                if (btn) klikSlot(parseInt(btn.getAttribute('data-jam'), 10));
             });
-            hitung();
+
+            pilih.addEventListener('change', muatKetersediaan);
+            tanggal.addEventListener('change', muatKetersediaan);
+
+            form.addEventListener('submit', function (e) {
+                if (!(selMulai != null && selSelesai != null && selSelesai > selMulai)) {
+                    e.preventDefault();
+                    errJam.textContent = 'Silakan pilih jam pada grid terlebih dahulu.';
+                }
+            });
+
+            // muat saat halaman dibuka (mis. datang dari tombol "Pesan" lapangan)
+            muatKetersediaan();
         })();
     </script>
 }

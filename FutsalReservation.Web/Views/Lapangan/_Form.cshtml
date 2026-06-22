@@ -21,9 +21,9 @@
 
     <div class="form-grup">
         <label asp-for="HargaPerJam"></label>
-        <input asp-for="HargaPerJam" class="form-control" type="number" step="1000" min="0" placeholder="120000" />
+        <input asp-for="HargaPerJam" asp-format="{0:0}" class="form-control" type="number" step="1000" min="0" inputmode="numeric" placeholder="120000" />
         <span asp-validation-for="HargaPerJam" class="field-error"></span>
-        <span class="hint">Dalam Rupiah, per jam pemakaian.</span>
+        <span class="hint">Dalam Rupiah (angka bulat), per jam pemakaian.</span>
     </div>
 </div>
 

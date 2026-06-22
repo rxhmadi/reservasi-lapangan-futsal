@@ -9,7 +9,9 @@
     bool menungguVerif = Model.StatusPembayaran == "Menunggu Verifikasi";
     bool dibatalkan = Model.Status == "Dibatalkan";
     bool bolehBayar = !isAdmin && !sudahLunas && !menungguVerif && !dibatalkan;
-    bool bolehBatal = !dibatalkan && Model.Status != "Selesai";
+    bool bolehBatal = isAdmin
+        ? (!dibatalkan && Model.Status != "Selesai")
+        : (Model.Status == "Menunggu");
 }
 
 @section HeaderActions {

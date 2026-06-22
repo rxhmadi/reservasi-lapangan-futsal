@@ -46,3 +46,10 @@ public class UbahStatusRequest
     [Required]
     public string Status { get; set; } = string.Empty;
 }
+
+public class KetersediaanResponse
+{
+    public int LapanganId { get; set; }
+    public DateTime Tanggal { get; set; }
+    public List<int> SlotTerisi { get; set; } = new();
+}

@@ -49,3 +49,10 @@ public class ReservasiFormVm
 
     public List<LapanganVm> DaftarLapangan { get; set; } = new();
 }
+
+public class KetersediaanVm
+{
+    public int LapanganId { get; set; }
+    public DateTime Tanggal { get; set; }
+    public List<int> SlotTerisi { get; set; } = new();
+}
