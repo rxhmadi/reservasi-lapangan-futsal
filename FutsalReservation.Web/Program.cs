@@ -13,11 +13,13 @@ builder.Services.AddSession(opt =>
     opt.Cookie.IsEssential = true;
 });
 
-var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5251/";
+var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "http://127.0.0.1:5251/";
 builder.Services.AddHttpClient<ApiClient>(c =>
 {
     c.BaseAddress = new Uri(apiBaseUrl);
-});
+})
+// jangan lewat proxy sistem untuk panggilan ke API lokal
+.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { UseProxy = false });
 
 builder.Services.AddScoped<FileUploadService>();
 
